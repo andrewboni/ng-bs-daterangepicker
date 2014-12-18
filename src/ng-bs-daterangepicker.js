@@ -23,6 +23,8 @@ angular.module('ngBootstrap', []).directive('input', function ($compile, $parse)
 			options.locale = $attributes.locale && $parse($attributes.locale)($scope);
 			options.opens = $attributes.opens && $parse($attributes.opens)($scope);
 
+                        var timeZone = $attributes.timeZone;
+
 			function format(date) {
 				return date.format(options.format);
 			}
@@ -57,9 +59,28 @@ angular.module('ngBootstrap', []).directive('input', function ($compile, $parse)
 				$element.data('daterangepicker').updateInputText();
 			});
 
+                        var range = {};
+                        if(timeZone) {
+                          // If timezone attribute exists...
+                          range = {
+                            startDate: moment(start).clone().tz(timeZone).startOf('day'),
+                            endDate: moment(end).clone().tz(timeZone).startOf('day')
+                          };                                                    
+                        } else {
+                          range = {
+                            startDate: start
+                            endDate: end
+                          }
+                        };
+
 			$element.daterangepicker(options, function(start, end) {
 				$scope.$apply(function () {
-					ngModel.$setViewValue({ startDate: start, endDate: end });
+					ngModel.$setViewValue(
+                                          { 
+                                            startDate: moment(start).clone().tz(timeZone).startOf('day'), 
+                                            endDate:   moment(end).clone().tz(timeZone).endOf('day')
+                                          }
+                                        );
 					ngModel.$render();
 				});
 			});			
